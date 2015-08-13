@@ -84,6 +84,8 @@ typedef enum : NSUInteger {
  */
 @property (nonatomic) BOOL useDeviceOrientation;
 
+@property (nonatomic) BOOL audioEnabled;
+
 /**
  * Use this method to request camera permission before initalizing LLSimpleCamera.
  */
@@ -98,7 +100,7 @@ typedef enum : NSUInteger {
  * Returns an instance of LLSimpleCamera with the given quality.
  * Quality parameter could be any variable starting with AVCaptureSessionPreset.
  */
-- (instancetype)initWithQuality:(NSString *)quality position:(CameraPosition)position videoEnabled:(BOOL)videoEnabled;
+- (instancetype)initWithQuality:(NSString *)quality position:(CameraPosition)position videoEnabled:(BOOL)videoEnabled audioEnabled:(BOOL)audioEnabled;
 
 /**
  * Returns an instance of LLSimpleCamera with quality "AVCaptureSessionPresetHigh" and position "CameraPositionBack".

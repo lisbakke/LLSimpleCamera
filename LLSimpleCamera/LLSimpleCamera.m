@@ -8,6 +8,7 @@
 
 #import "LLSimpleCamera.h"
 #import <ImageIO/CGImageProperties.h>
+#import <LLSimpleCamera/LLSimpleCamera.h>
 #import "UIImage+FixOrientation.h"
 
 @interface LLSimpleCamera () <AVCaptureFileOutputRecordingDelegate>
@@ -39,14 +40,15 @@ NSString *const LLSimpleCameraErrorDomain = @"LLSimpleCameraErrorDomain";
 }
 
 - (instancetype)initWithVideoEnabled:(BOOL)videoEnabled {
-    self = [self initWithQuality:AVCaptureSessionPresetHigh position:CameraPositionBack videoEnabled:videoEnabled];
+    self = [self initWithQuality:AVCaptureSessionPresetHigh position:CameraPositionBack videoEnabled:videoEnabled
+                    audioEnabled:YES];
     if(self) {
     }
     
     return self;
 }
 
-- (instancetype)initWithQuality:(NSString *)quality position:(CameraPosition)position videoEnabled:(BOOL)videoEnabled {
+- (instancetype)initWithQuality:(NSString *)quality position:(CameraPosition)position videoEnabled:(BOOL)videoEnabled audioEnabled:(BOOL)audioEnabled {
     self = [super initWithNibName:nil bundle:nil];
     if(self) {
         _cameraQuality = quality;
@@ -57,6 +59,7 @@ NSString *const LLSimpleCameraErrorDomain = @"LLSimpleCameraErrorDomain";
         _flash = CameraFlashOff;
         _videoEnabled = videoEnabled;
         _recording = NO;
+        _audioEnabled = audioEnabled;
     }
     
     return self;
@@ -169,6 +172,13 @@ NSString *const LLSimpleCameraErrorDomain = @"LLSimpleCameraErrorDomain";
     }];
 }
 
+- (void)setCameraQuality:(NSString *)cameraQuality {
+  _cameraQuality = cameraQuality;
+  if (_session) {
+    _session.sessionPreset = cameraQuality;
+  }
+}
+
 - (void)initialize {
     if(!_session) {
         _session = [[AVCaptureSession alloc] init];
@@ -218,18 +228,20 @@ NSString *const LLSimpleCameraErrorDomain = @"LLSimpleCameraErrorDomain";
         
         // add audio if video is enabled
         if(self.videoEnabled) {
-            _audioCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
-            _audioDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:_audioCaptureDevice error:&error];
-            if (!_audioDeviceInput) {
+            if (self.audioEnabled) {
+              _audioCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+              _audioDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:_audioCaptureDevice error:&error];
+              if (!_audioDeviceInput) {
                 if(self.onError) {
-                    self.onError(self, error);
+                  self.onError(self, error);
                 }
-            }
-        
-            if([self.session canAddInput:_audioDeviceInput]) {
+              }
+
+              if([self.session canAddInput:_audioDeviceInput]) {
                 [self.session addInput:_audioDeviceInput];
+              }
             }
-        
+
             _movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
             if([self.session canAddOutput:_movieFileOutput]) {
                 [self.session addOutput:_movieFileOutput];
